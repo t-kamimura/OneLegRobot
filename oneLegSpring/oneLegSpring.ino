@@ -17,8 +17,8 @@
 #define LOOPTIME 5     //[ms]
 #define ENDTIME 10000   //[ms]
 #define TEXTSIZE 2
-#define KP 2.0
-#define KD 0.01
+#define KP 20
+#define KD 0.2
 #define TGT_POS 0
 
 unsigned long timer[3];
@@ -34,6 +34,7 @@ RMDX8_M5 myMotor1(CAN0, MOTOR_ADDRESS1);    // knee
 
 double initial_pos[2], previous_pos[2], present_vel[2];
 int32_t target_pos[2], target_cur[2];
+bool exitflag;
 
 void init_can();
 
@@ -55,12 +56,15 @@ void setup()
     initial_pos[0] = myMotor0.present_angle;
     myMotor1.readPosition();
     initial_pos[1] = myMotor1.present_angle;
+    M5.Lcd.setCursor(0, 40);
+    M5.Lcd.printf("(Exit) Press Center Button >>");
 }
 
 void loop()
 {
-    while (millis() - timer[0] < ENDTIME)
-    {
+    while(!M5.BtnB.read()){
+    // while (millis() - timer[0] < ENDTIME){
+        M5.update();
         timer[1] = millis();
 
         // read multi turn angle
@@ -77,7 +81,6 @@ void loop()
         myMotor0.writePosition(target_pos[0]);
         myMotor1.writeCurrent(target_cur[1]);
 
-        M5.update();
 
         // vel = (myMotor2.present_pos - pos_buf)/(LOOPTIME*0.01);
 
